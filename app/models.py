@@ -19,7 +19,6 @@ class User(Base):
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     recently_updated_password = Column(Boolean, nullable=False)
-    recently_ = Column(BigInteger, nullable=False)
     created_at = Column(Date, nullable=False)
 
 # tabela z samochodami
@@ -27,7 +26,7 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
     license_plate = Column(String(255), nullable=False)
     brand = Column(String(255), nullable=False)
     battery_capacity_kWh = Column(Integer, nullable=False)
