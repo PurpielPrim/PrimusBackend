@@ -19,7 +19,7 @@ class User(Base):
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     recently_updated_password = Column(Boolean, nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela z samochodami
 class Vehicle(Base):
@@ -32,7 +32,7 @@ class Vehicle(Base):
     battery_capacity_kWh = Column(Integer, nullable=False)
     battery_condition = Column(Float, nullable=False)
     max_charging_power_kW = Column(BigInteger, nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela ze stacjami
 class ChargingStation(Base):
@@ -42,7 +42,7 @@ class ChargingStation(Base):
     name = Column(String(255), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela z portami
 class ChargingPort(Base):
@@ -53,7 +53,7 @@ class ChargingPort(Base):
     power_kW = Column(BigInteger, nullable=False)
     status = Column(String(255), nullable=False)
     last_service_date = Column(Date, nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela z sesją 
 class ChargingSession(Base):
@@ -80,7 +80,7 @@ class Payment(Base):
     status = Column(String(255), nullable=False)
     transaction_id = Column(BigInteger, nullable=False)
     payment_method = Column(String(255), nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela z kuponami
 class Discount(Base):
@@ -91,4 +91,4 @@ class Discount(Base):
     description = Column(String(255), nullable=False)
     discount_percentage = Column(BigInteger, nullable=False)
     expiration_date = Column(Date, nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))

@@ -14,3 +14,11 @@ class User(BaseModel):
     
     class Config:
         from_attributes = True
+
+class ChargingStationBase(BaseModel):
+    name: str
+    latitude: float
+    longitude: float
+
+class CreateChargingStation(ChargingStationBase):
+    pass
