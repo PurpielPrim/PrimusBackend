@@ -9,8 +9,8 @@ router = APIRouter(
     tags=['User']
 )
 
-# get one user
-@router.get('/{id}', response_model=schemas.User)
+# Wypisz jednego użytkownika
+@router.get('/{id}', response_model=schemas.UserOut)
 def get_user(id: str, db: Session = Depends(get_db)):
     
     user = db.query(models.User).filter(models.User.id == id).first()
@@ -21,8 +21,8 @@ def get_user(id: str, db: Session = Depends(get_db)):
     
     return user
 
-# get all users
-@router.get('/', response_model=List[schemas.User])
+# Wypisz wszystkich użytkowników
+@router.get('/', response_model=List[schemas.UserOut])
 def get_all_users(db: Session = Depends(get_db)):
     
     user = db.query(models.User)

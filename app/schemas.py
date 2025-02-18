@@ -6,9 +6,9 @@ from .models import UserRoleEnum
 
 # Baza użytkownika
 class User(BaseModel):
+    id: str
     name: Optional[str] = None
     email: Optional[EmailStr] = None
-    image: Optional[str] = None
     role: UserRoleEnum = UserRoleEnum.USER
     isTwoFactorEnabled: bool = False
 
@@ -25,7 +25,7 @@ class UserUpdate(User):
 
 # Do wypisania użytkownika
 class UserOut(User):
-    id: str
+    pass
     email_verified: Optional[datetime] = None
 
     class Config:
@@ -48,5 +48,10 @@ class ChargingStationBase(BaseModel):
     latitude: float
     longitude: float
 
-class CreateChargingStation(ChargingStationBase):
+class ChargingStationCreate(ChargingStationBase):
     pass
+
+class ChargingStationOut(ChargingStationBase):
+    id: int
+    pass
+    created_at: datetime
