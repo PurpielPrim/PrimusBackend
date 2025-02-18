@@ -1,25 +1,42 @@
-from sqlalchemy import Column, Integer, BigInteger, String, Boolean, Float, Date, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, BigInteger, String, Boolean, Float, Date, ForeignKey, CheckConstraint, Text, Enum
 from sqlalchemy.dialects.postgresql import *
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
 from .database import Base
+import enum
+
+class UserRoleEnum(str, enum.Enum):
+    ADMIN = "ADMIN"
+    USER = "USER"
 
 # tabela z użytkownikami
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "User"
+
+    id = Column(Text, primary_key=True, nullable=False)
+    name = Column(Text, nullable=True)
+    email = Column(Text, nullable=True)
+    email_verified = Column(TIMESTAMP, nullable=True)
+    image = Column(Text, nullable=True)
+    password = Column(Text, nullable=True)
+    role = Column(Enum(UserRoleEnum, name="user_role_enum"), nullable=False, default=UserRoleEnum.USER)
+    isTwoFactorEnabled = Column(Boolean, nullable=False, default=False)
+
+# class User(Base):
+#     __tablename__ = "users"
     
-    id = Column(BigInteger, primary_key=True, nullable=False)
-    email = Column(String(255), nullable=False)
-    password = Column(String(255), nullable=False)
-    role = Column(String(255), nullable=False)
-    phone_number = Column(Integer, nullable=False)
-    two_factor_enabled = Column(Boolean, nullable=False)
-    two_factor_secret = Column(String(255), nullable=False)
-    first_name = Column(String(255), nullable=False)
-    last_name = Column(String(255), nullable=False)
-    recently_updated_password = Column(Boolean, nullable=False)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+#     id = Column(BigInteger, primary_key=True, nullable=False)
+#     email = Column(String(255), nullable=False)
+#     password = Column(String(255), nullable=False)
+#     role = Column(String(255), nullable=False)
+#     phone_number = Column(Integer, nullable=False)
+#     two_factor_enabled = Column(Boolean, nullable=False)
+#     two_factor_secret = Column(String(255), nullable=False)
+#     first_name = Column(String(255), nullable=False)
+#     last_name = Column(String(255), nullable=False)
+#     recently_updated_password = Column(Boolean, nullable=False)
+#     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela z samochodami
 class Vehicle(Base):

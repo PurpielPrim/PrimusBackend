@@ -5,13 +5,13 @@ from .. import models, schemas
 from ..database import engine, get_db
 
 router = APIRouter(
-    prefix="/users",
-    tags=['Users']
+    prefix="/User",
+    tags=['User']
 )
 
 # get one user
 @router.get('/{id}', response_model=schemas.User)
-def get_user(id: int, db: Session = Depends(get_db)):
+def get_user(id: str, db: Session = Depends(get_db)):
     
     user = db.query(models.User).filter(models.User.id == id).first()
 
