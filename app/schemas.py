@@ -31,17 +31,23 @@ class UserOut(User):
     class Config:
         from_attributes = True
 
-# class User(BaseModel):
-#     id: int
-#     email: EmailStr
-#     first_name: str
-#     last_name: str
-#     phone_number: int
-#     role: str
-#     created_at: datetime
-    
-#     class Config:
-#         from_attributes = True
+class VehicleBase(BaseModel):
+    id: Optional[int] = None
+    user_id: str
+    license_plate: str
+    brand: str
+    battery_capacity_kWh: Optional[int] = None
+    battery_condition: Optional[float] = None
+    max_charging_powerkWh: Optional[int] = None
+    created_at: Optional[datetime] = None
+
+class VehicleCreate(VehicleBase):
+    user_id: str
+    license_plate: str
+    brand: str
+
+class VehicleOut(VehicleBase):
+    pass
 
 class ChargingStationBase(BaseModel):
     name: str
@@ -55,3 +61,6 @@ class ChargingStationOut(ChargingStationBase):
     id: int
     pass
     created_at: datetime
+
+    class Config:
+        from_attributes = True

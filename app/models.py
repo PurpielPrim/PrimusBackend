@@ -23,32 +23,17 @@ class User(Base):
     role = Column(Enum(UserRoleEnum, name="user_role_enum"), nullable=False, default=UserRoleEnum.USER)
     isTwoFactorEnabled = Column(Boolean, nullable=False, default=False)
 
-# class User(Base):
-#     __tablename__ = "users"
-    
-#     id = Column(BigInteger, primary_key=True, nullable=False)
-#     email = Column(String(255), nullable=False)
-#     password = Column(String(255), nullable=False)
-#     role = Column(String(255), nullable=False)
-#     phone_number = Column(Integer, nullable=False)
-#     two_factor_enabled = Column(Boolean, nullable=False)
-#     two_factor_secret = Column(String(255), nullable=False)
-#     first_name = Column(String(255), nullable=False)
-#     last_name = Column(String(255), nullable=False)
-#     recently_updated_password = Column(Boolean, nullable=False)
-#     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-
 # tabela z samochodami
 class Vehicle(Base):
     __tablename__ = "vehicles"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
     user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
-    license_plate = Column(String(255), nullable=False)
+    license_plate = Column(String(255), nullable=False, unique=True)
     brand = Column(String(255), nullable=False)
     battery_capacity_kWh = Column(Integer, nullable=False)
     battery_condition = Column(Float, nullable=False)
-    max_charging_power_kW = Column(BigInteger, nullable=False)
+    max_charging_powerkWh = Column(BigInteger, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela ze stacjami
@@ -77,7 +62,7 @@ class ChargingSession(Base):
     __tablename__ = "charging_sessions"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
     vehicle_id = Column(BigInteger, ForeignKey("vehicles.id"), nullable=False)
     port_id = Column(BigInteger, ForeignKey("charging_ports.id"), nullable=False)
     start_time = Column(Date, nullable=False)
@@ -91,7 +76,7 @@ class Payment(Base):
     __tablename__ = "payments"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
     session_id = Column(BigInteger, ForeignKey("charging_sessions.id"), nullable=False)
     amount = Column(Float, nullable=False)
     status = Column(String(255), nullable=False)

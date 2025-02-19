@@ -23,7 +23,7 @@ def create_station(charging_station: schemas.ChargingStationCreate, db: Session 
 
 # Wypisz jedną stację
 @router.get('/{id}', response_model=schemas.ChargingStationOut)
-def get_user(id: str, db: Session = Depends(get_db)):
+def get_station(id: str, db: Session = Depends(get_db)):
     
     station = db.query(models.ChargingStation).filter(models.ChargingStation.id == id).first()
 
@@ -35,7 +35,7 @@ def get_user(id: str, db: Session = Depends(get_db)):
 
 # Wypisz wszystkie stacje
 @router.get('/', response_model=List[schemas.ChargingStationOut])
-def get_station(db: Session = Depends(get_db)):
+def get_all_stations(db: Session = Depends(get_db)):
     
     station = db.query(models.ChargingStation)
     
