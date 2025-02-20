@@ -66,7 +66,7 @@ class ChargingSession(Base):
     vehicle_id = Column(BigInteger, ForeignKey("vehicles.id"), nullable=False)
     port_id = Column(BigInteger, ForeignKey("charging_ports.id"), nullable=False)
     start_time = Column(Date, nullable=False)
-    end_time = Column(Date, nullable=False)
+    end_time = Column(Date, nullable=True)
     energy_used_kWh = Column(Float, nullable=False)
     total_cost = Column(Float, nullable=False)
     status = Column(String(255), nullable=False)

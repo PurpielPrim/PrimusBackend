@@ -26,42 +26,43 @@ def end_charging_session(session_id: int, db: Session, end_time: datetime):
 
 @router.post("/start", response_model=schemas.ChargingSessionBase)
 def add_log(
-    vehicle_id: int,
-    port_id: int,
-    duration_minutes: int,  # ⬅ Nowy parametr
+    session_data: schemas.ChargingSessionCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
     user_id = current_user.id
-    
+
     # Sprawdzenie pojazdu i portu
-    vehicle = db.query(models.Vehicle).filter(models.Vehicle.id == vehicle_id, models.Vehicle.user_id == user_id).first()
+    vehicle = db.query(models.Vehicle).filter(
+        models.Vehicle.id == session_data.vehicle_id,
+        models.Vehicle.user_id == user_id
+    ).first()
     if not vehicle:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found or does not belong to user")
-    
-    port = db.query(models.ChargingPort).filter(models.ChargingPort.id == port_id).first()
+
+    port = db.query(models.ChargingPort).filter(models.ChargingPort.id == session_data.port_id).first()
     if not port:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Charging port not found")
-    
+
     # Tworzenie sesji ładowania
     new_session = models.ChargingSession(
         user_id=user_id,
-        vehicle_id=vehicle_id,
-        port_id=port_id,
+        vehicle_id=session_data.vehicle_id,
+        port_id=session_data.port_id,
         start_time=datetime.utcnow(),
         end_time=None,
         energy_used_kWh=0.0,
         total_cost=0.0,
         status="IN_PROGRESS"
     )
-    
+
     db.add(new_session)
     db.commit()
     db.refresh(new_session)
-    
+
     # Zaplanowanie zakończenia sesji po podanym czasie
-    end_time = datetime.utcnow() + timedelta(minutes=duration_minutes)
+    end_time = datetime.utcnow() + timedelta(minutes=session_data.duration_minutes)
     background_tasks.add_task(end_charging_session, new_session.id, db, end_time)
 
     return new_session

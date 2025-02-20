@@ -87,11 +87,11 @@ class ChargingStationOut(ChargingStationBase):
 class ChargingSessionBase(BaseModel):
     vehicle_id: int
     port_id: int
-    duration_minutes: int
 
 # Tworzenie nowej sesji ładowania
 class ChargingSessionCreate(ChargingSessionBase):
     pass
+    duration_minutes: int
 
 # Odpowiedź dla użytkownika (np. po rozpoczęciu lub zakończeniu sesji)
 class ChargingSessionOut(ChargingSessionBase):
