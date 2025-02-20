@@ -82,6 +82,28 @@ class ChargingStationOut(ChargingStationBase):
 
     class Config:
         from_attributes = True
+    
+class ChargingPortBase(BaseModel):
+    station_id: int
+    power_kW: int
+    status: str
+
+class ChargingPortCreate(ChargingPortBase):
+    pass
+
+class ChargingPortUpdate(BaseModel):
+    station_id: Optional[int] = None
+    power_kW: Optional[int] = None
+    status: Optional[str] = None
+    last_service_date: Optional[str] = None
+
+class ChargingPortOut(ChargingPortBase):
+    id: int
+    pass
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 # Podstawowa struktura sesji ładowania
 class ChargingSessionBase(BaseModel):
