@@ -1,8 +1,15 @@
 from pydantic import BaseModel, EmailStr
+from pydantic.types import conint
 from datetime import datetime
 from typing import Optional
-from pydantic.types import conint
 from .models import UserRoleEnum
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
 
 # Baza użytkownika
 class User(BaseModel):
@@ -11,6 +18,10 @@ class User(BaseModel):
     email: Optional[EmailStr] = None
     role: UserRoleEnum = UserRoleEnum.USER
     isTwoFactorEnabled: bool = False
+
+class UserLogin(User):
+    email: EmailStr
+    password: str
 
 # Do tworzenia użytkownika
 class UserCreate(User):
@@ -36,15 +47,15 @@ class VehicleBase(BaseModel):
     user_id: str
     license_plate: str
     brand: str
-    battery_capacity_kWh: Optional[int] = None
-    battery_condition: Optional[float] = None
-    max_charging_powerkWh: Optional[int] = None
     created_at: Optional[datetime] = None
 
 class VehicleCreate(VehicleBase):
     user_id: str
     license_plate: str
     brand: str
+    battery_capacity_kWh: Optional[int] = None
+    battery_condition: Optional[float] = None
+    max_charging_powerkWh: Optional[int] = None
 
 class VehicleOut(VehicleBase):
     pass
