@@ -28,7 +28,7 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
+    user_id = Column(Text, ForeignKey("User.id"), nullable=False)
     license_plate = Column(String(255), nullable=False, unique=True)
     brand = Column(String(255), nullable=False)
     battery_capacity_kWh = Column(Integer, nullable=False)
@@ -62,7 +62,7 @@ class ChargingSession(Base):
     __tablename__ = "charging_sessions"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
+    user_id = Column(Text, ForeignKey("User.id"), nullable=False)
     vehicle_id = Column(BigInteger, ForeignKey("vehicles.id"), nullable=False)
     port_id = Column(BigInteger, ForeignKey("charging_ports.id"), nullable=False)
     start_time = Column(Date, nullable=False)
@@ -76,7 +76,7 @@ class Payment(Base):
     __tablename__ = "payments"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(BigInteger, ForeignKey("User.id"), nullable=False)
+    user_id = Column(Text, ForeignKey("User.id"), nullable=False)
     session_id = Column(BigInteger, ForeignKey("charging_sessions.id"), nullable=False)
     amount = Column(Float, nullable=False)
     status = Column(String(255), nullable=False)

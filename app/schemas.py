@@ -19,6 +19,7 @@ class User(BaseModel):
     role: UserRoleEnum = UserRoleEnum.USER
     isTwoFactorEnabled: bool = False
 
+# Logowanie użytkownika - potrzebne do tokena
 class UserLogin(User):
     email: EmailStr
     password: str
@@ -42,6 +43,7 @@ class UserOut(User):
     class Config:
         from_attributes = True
 
+# Baza pojazdu
 class VehicleBase(BaseModel):
     id: Optional[int] = None
     user_id: str
@@ -49,6 +51,7 @@ class VehicleBase(BaseModel):
     brand: str
     created_at: Optional[datetime] = None
 
+# Do tworzenia pojazdu
 class VehicleCreate(VehicleBase):
     user_id: str
     license_plate: str
@@ -57,17 +60,21 @@ class VehicleCreate(VehicleBase):
     battery_condition: Optional[float] = None
     max_charging_powerkWh: Optional[int] = None
 
+# Do wypisywania pojazdu
 class VehicleOut(VehicleBase):
     pass
 
+# Baza stacji
 class ChargingStationBase(BaseModel):
     name: str
     latitude: float
     longitude: float
 
+# Do tworzenia stacji
 class ChargingStationCreate(ChargingStationBase):
     pass
 
+# Do wypisywania stacji
 class ChargingStationOut(ChargingStationBase):
     id: int
     pass
@@ -75,3 +82,26 @@ class ChargingStationOut(ChargingStationBase):
 
     class Config:
         from_attributes = True
+
+# Podstawowa struktura sesji ładowania
+class ChargingSessionBase(BaseModel):
+    vehicle_id: int
+    port_id: int
+    duration_minutes: int
+
+# Tworzenie nowej sesji ładowania
+class ChargingSessionCreate(ChargingSessionBase):
+    pass
+
+# Odpowiedź dla użytkownika (np. po rozpoczęciu lub zakończeniu sesji)
+class ChargingSessionOut(ChargingSessionBase):
+    id: int
+    user_id: str
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    energy_used_kWh: float
+    total_cost: float
+    status: str
+
+    class Config:
+        from_attributes = True     
