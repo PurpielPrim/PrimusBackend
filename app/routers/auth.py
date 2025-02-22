@@ -35,6 +35,7 @@ def decode_jwt_token(token: str) -> dict:
         )
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+    print(f"Received Token from Frontend: {token}")
     payload = decode_jwt_token(token)
     user_id: str = payload.get("sub")
     if not user_id:
