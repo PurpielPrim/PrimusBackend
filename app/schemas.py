@@ -127,3 +127,24 @@ class ChargingSessionOut(ChargingSessionBase):
 
     class Config:
         from_attributes = True     
+
+# Baza płatności
+class PaymentBase(BaseModel):
+    user_id: str
+    session_id: int
+    amount: float
+    status: str
+    transaction_id: int
+    payment_method: str
+
+# Do tworzenia płatności
+class PaymentCreate(PaymentBase):
+    pass
+
+# Do wypisywania płatności
+class PaymentOut(PaymentBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
