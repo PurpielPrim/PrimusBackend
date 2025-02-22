@@ -1,18 +1,17 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 from dotenv import load_dotenv
-import os
 
 # Pobiera zmienne z pliku .env
 load_dotenv()
 
 class Settings(BaseSettings):
-    SECRET_KEY: str
-    ALGORITHM: str
+    secret_key: str = Field(alias="AUTH_SECRET")
+    algorithm: str
     database_url: str
 
     class Config:
         env_file = ".env"
-        env_file_encoding = "utf-8"
         extra = "allow"
 
 settings = Settings()

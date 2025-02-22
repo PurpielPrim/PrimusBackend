@@ -10,8 +10,8 @@ router = APIRouter(
     tags=['Authentication']
 )
 
-SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = settings.ALGORITHM
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def decode_jwt_token(token: str) -> dict:
