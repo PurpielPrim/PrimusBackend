@@ -41,12 +41,23 @@ def get_payment(
 
 # Wypisz wszystkie płatności dla użytkownika
 @router.get("/", response_model=List[schemas.PaymentOut])
-def get_all_payments(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+async def get_payments(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    payments = db.query(models.Payment).all()
-    return payments
+    try:
+        payments = (
+            db.query(models.Payment)
+            .filter(models.Payment.user_id == current_user.id)
+            .all()
+        )
+        return payments
+    except Exception as e:
+        logger.error(f"Error fetching payments: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch payments"
+        )
 
 # Zaktualizuj płatność
 @router.put("/{id}", response_model=schemas.PaymentOut)

@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+from typing import List
+import logging
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/sessions",
@@ -66,3 +70,23 @@ def add_log(
     background_tasks.add_task(end_charging_session, new_session.id, db, end_time)
 
     return new_session
+
+@router.get("/", response_model=List[schemas.ChargingSessionOut])
+async def get_charging_sessions(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        sessions = (
+            db.query(models.ChargingSession)
+            .filter(models.ChargingSession.user_id == current_user.id)
+            .all()
+        )
+        logger.info(f"Found {len(sessions)} charging sessions for user {current_user.id}")
+        return sessions
+    except Exception as e:
+        logger.error(f"Error fetching charging sessions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch charging sessions"
+        )
