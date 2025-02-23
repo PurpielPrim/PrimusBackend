@@ -2,9 +2,9 @@ from fastapi import Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+
 from .. import models, database
 from ..config import settings
-import logging
 from typing import List
 from .. import schemas
 
@@ -18,20 +18,16 @@ ALGORITHM = settings.algorithm
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 def decode_jwt_token(token: str) -> dict:
     try:
-        logger.debug(f"Decoding token: {token}")
+
         if not token:
             raise JWTError("Token is null")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.debug(f"Decoded payload: {payload}")
+
         return payload
     except JWTError as e:
-        logger.error(f"JWT decoding error: {str(e)}")
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
@@ -65,11 +61,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        logger.debug(f"Authenticated user: {user.email}")
+
         return user
 
     except Exception as e:
-        logger.error(f"Authentication error: {str(e)}")
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",
@@ -86,7 +82,7 @@ async def get_vehicles(
     db: Session = Depends(database.get_db)
 ):
     try:
-        logger.info(f"Getting vehicles for user ID: {current_user.id}")
+
         
         vehicles = (
             db.query(models.Vehicle)
@@ -94,11 +90,11 @@ async def get_vehicles(
             .all()
         )
         
-        logger.info(f"Found {len(vehicles)} vehicles")
+
         return vehicles
         
     except Exception as e:
-        logger.exception("Error fetching vehicles")
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
