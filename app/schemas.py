@@ -70,6 +70,10 @@ class VehicleUpdate(VehicleBase):
 # Do wypisywania pojazdu
 class VehicleOut(VehicleBase):
     pass
+    battery_capacity_kWh: int
+    battery_condition: float
+    max_charging_powerkWh: int
+    current_battery_capacity_kw: int
 
 # Baza stacji
 class ChargingStationBase(BaseModel):

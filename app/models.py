@@ -31,9 +31,9 @@ class Vehicle(Base):
     user_id = Column(Text, ForeignKey("User.id"), nullable=False)
     license_plate = Column(String(255), nullable=False, unique=True)
     brand = Column(String(255), nullable=False)
-    battery_capacity_kWh = Column(Integer, nullable=False)
-    battery_condition = Column(Float, nullable=False)
-    max_charging_powerkWh = Column(BigInteger, nullable=False)
+    battery_capacity_kWh = Column(Integer, nullable=True)
+    battery_condition = Column(Float, nullable=True)
+    max_charging_powerkWh = Column(BigInteger, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     current_battery_capacity_kw = Column(Integer, nullable=False)
 
