@@ -75,6 +75,9 @@ class VehicleOut(VehicleBase):
     max_charging_powerkWh: int
     current_battery_capacity_kw: int
 
+    class Config:
+        from_attributes = True
+
 # Baza stacji
 class ChargingStationBase(BaseModel):
     name: str
