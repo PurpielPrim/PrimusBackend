@@ -61,6 +61,12 @@ class VehicleCreate(VehicleBase):
     max_charging_powerkWh: Optional[int] = None
     current_battery_capacity_kw: int
 
+class VehicleUpdate(VehicleBase):
+    brand: Optional[str] = None
+    battery_capacity_kWh: Optional[int] = None
+    battery_condition: Optional[float] = None
+    current_battery_capacity_kw: Optional[int] = None
+
 # Do wypisywania pojazdu
 class VehicleOut(VehicleBase):
     pass
