@@ -35,6 +35,7 @@ class Vehicle(Base):
     battery_condition = Column(Float, nullable=False)
     max_charging_powerkWh = Column(BigInteger, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    current_battery_capacity_kw = Column(Integer, nullable=False)
 
 # tabela ze stacjami
 class ChargingStation(Base):
