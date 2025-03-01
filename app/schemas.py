@@ -132,7 +132,7 @@ class ChargingPortOut(BaseModel):
 
 # Podstawowa struktura sesji ładowania
 class ChargingSessionBase(BaseModel):
-    id: int  # Make sure id is included
+    id: int
     user_id: str
     vehicle_id: int
     port_id: int
@@ -140,6 +140,7 @@ class ChargingSessionBase(BaseModel):
     energy_used_kwh: float
     total_cost: float
     status: str
+    payment_status: str = "PENDING"  # Add this line
 
     class Config:
         orm_mode = True
@@ -152,6 +153,7 @@ class ChargingSessionCreate(BaseModel):
     energy_used_kwh: float = 0.0
     total_cost: float = 0.0
     status: str = "IN_PROGRESS"
+    payment_status: str = "PENDING"  # Add this line
     
     class Config:
         from_attributes = True
@@ -165,6 +167,7 @@ class ChargingSessionOut(ChargingSessionBase):
     energy_used_kwh: float
     total_cost: float
     status: str
+    payment_status: str  # Add this line
 
     class Config:
         from_attributes = True     
@@ -174,6 +177,7 @@ class ChargingSessionUpdate(BaseModel):
     energy_used_kwh: float
     total_cost: float
     current_battery_level: Optional[float] = None
+    payment_status: Optional[str] = None  # Add this line
 
     class Config:
         from_attributes = True

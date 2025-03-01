@@ -73,6 +73,7 @@ def end_charging_session(session_id: int, db: Session, end_time: datetime):
             db.rollback()
             raise
 
+# Update the start session endpoint to include payment_status
 @router.post("/start", response_model=schemas.ChargingSessionBase)
 def add_log(
     session_data: schemas.ChargingSessionCreate,
@@ -81,14 +82,14 @@ def add_log(
 ):
     try:
         new_session = models.ChargingSession(
-            user_id=str(current_user.id),  # Convert to string
+            user_id=str(current_user.id),
             vehicle_id=session_data.vehicle_id,
             port_id=session_data.port_id,
             start_time=datetime.utcnow(),
-            energy_used_kwh=float(session_data.energy_used_kwh),  # Ensure float
-            total_cost=float(session_data.total_cost),  # Ensure float
-            status=session_data.status
-            # Remove current_battery_capacity_kw as it's not in the model
+            energy_used_kwh=float(session_data.energy_used_kwh),
+            total_cost=float(session_data.total_cost),
+            status=session_data.status,
+            payment_status="PENDING"  # Add this line
         )
         
         db.add(new_session)
@@ -282,4 +283,35 @@ def update_session_state(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update session: {str(e)}"
+        )
+
+# Add a new endpoint to update payment status
+@router.patch("/{session_id}/payment", response_model=schemas.ChargingSessionOut)
+def update_payment_status(
+    session_id: int,
+    payment_status: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    try:
+        session = db.query(models.ChargingSession).filter(
+            models.ChargingSession.id == session_id,
+            models.ChargingSession.user_id == current_user.id
+        ).first()
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        session.payment_status = payment_status
+        db.commit()
+        db.refresh(session)
+            
+        return session
+        
+    except Exception as e:
+        logger.error(f"Error updating payment status for session {session_id}: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update payment status: {str(e)}"
         )

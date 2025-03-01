@@ -39,6 +39,7 @@ def get_port(id: int, db: Session = Depends(get_db)):
 # Wypisz wszystkie porty
 @router.get('/', response_model=List[schemas.ChargingPortOut])
 def get_all_ports(db: Session = Depends(get_db)):
+    # Remove authentication requirement for GET /ports
     ports = db.query(models.ChargingPort).all()
     
     # Set default last_service_date if None

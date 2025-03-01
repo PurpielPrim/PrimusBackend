@@ -36,10 +36,9 @@ def get_station(id: str, db: Session = Depends(get_db)):
 # Wypisz wszystkie stacje
 @router.get('/', response_model=List[schemas.ChargingStationOut])
 def get_all_stations(db: Session = Depends(get_db)):
-    
-    station = db.query(models.ChargingStation)
-    
-    return station
+    # Remove authentication requirement for GET /stations
+    stations = db.query(models.ChargingStation)
+    return stations.all()
 
 # Delete station
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)

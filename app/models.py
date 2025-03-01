@@ -79,6 +79,7 @@ class ChargingSession(Base):
     energy_used_kwh = Column(Float, nullable=False, default=0.0)
     total_cost = Column(Float, nullable=False, default=0.0)
     status = Column(String(255), nullable=False, default='IN_PROGRESS')
+    payment_status = Column(String(255), nullable=False, default='PENDING')  # Add this line
     
     # Add property to calculate duration
     @property
