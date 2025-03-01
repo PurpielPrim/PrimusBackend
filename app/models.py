@@ -31,11 +31,19 @@ class Vehicle(Base):
     user_id = Column(Text, ForeignKey("User.id"), nullable=False)
     license_plate = Column(String(255), nullable=False, unique=True)
     brand = Column(String(255), nullable=False)
-    battery_capacity_kWh = Column(Integer, nullable=True)
-    battery_condition = Column(Float, nullable=True)
-    max_charging_powerkWh = Column(BigInteger, nullable=True)
+    battery_capacity_kwh = Column(Integer, nullable=True)  # Changed from battery_capacity_kWh
+    battery_condition = Column(Float)  # This should be set manually, not calculated
+    max_charging_powerkwh = Column(BigInteger, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    current_battery_capacity_kw = Column(Integer, nullable=False)
+    current_battery_capacity_kw = Column(Float)
+    
+    # Remove any @hybrid_property or event listeners that might be updating battery_condition
+    
+    # If there was an event listener like this, remove it:
+    # @validates('current_battery_capacity_kw')
+    # def validate_battery(self, key, value):
+    #     self.battery_condition = value / self.battery_capacity_kWh
+    #     return value
 
 # tabela ze stacjami
 class ChargingStation(Base):
@@ -53,9 +61,9 @@ class ChargingPort(Base):
     
     id = Column(BigInteger, primary_key=True, nullable=False)
     station_id = Column(BigInteger, ForeignKey("charging_stations.id"), nullable=False)
-    power_kW = Column(BigInteger, nullable=False)
+    power_kw = Column(BigInteger, nullable=False)
     status = Column(String(255), nullable=False)
-    last_service_date = Column(Date, nullable=False)
+    last_service_date = Column(Date, nullable=True)  # Make it nullable
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 # tabela z sesją 
@@ -63,14 +71,27 @@ class ChargingSession(Base):
     __tablename__ = "charging_sessions"
     
     id = Column(BigInteger, primary_key=True, nullable=False)
-    user_id = Column(Text, ForeignKey("User.id"), nullable=False)
+    user_id = Column(String, ForeignKey("User.id"), nullable=False)  # Change Text to String
     vehicle_id = Column(BigInteger, ForeignKey("vehicles.id"), nullable=False)
     port_id = Column(BigInteger, ForeignKey("charging_ports.id"), nullable=False)
-    start_time = Column(Date, nullable=False)
-    end_time = Column(Date, nullable=True)
-    energy_used_kWh = Column(Float, nullable=False)
-    total_cost = Column(Float, nullable=False)
-    status = Column(String(255), nullable=False)
+    start_time = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    end_time = Column(TIMESTAMP(timezone=True), nullable=True)
+    energy_used_kwh = Column(Float, nullable=False, default=0.0)
+    total_cost = Column(Float, nullable=False, default=0.0)
+    status = Column(String(255), nullable=False, default='IN_PROGRESS')
+    
+    # Add property to calculate duration
+    @property
+    def duration_minutes(self):
+        if self.end_time and self.start_time:
+            delta = self.end_time - self.start_time
+            return int(delta.total_seconds() / 60)
+        return None
+
+    # Add relationships
+    user = relationship("User", backref="charging_sessions")
+    vehicle = relationship("Vehicle", backref="charging_sessions")
+    port = relationship("ChargingPort", backref="charging_sessions")
 
 # tabela z płatnościami
 class Payment(Base):

@@ -40,3 +40,33 @@ def get_all_stations(db: Session = Depends(get_db)):
     station = db.query(models.ChargingStation)
     
     return station
+
+# Delete station
+@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_station(id: int, db: Session = Depends(get_db)):
+    station_query = db.query(models.ChargingStation).filter(models.ChargingStation.id == id)
+    station = station_query.first()
+
+    if not station:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail=f"Station with id: {id} does not exist")
+
+    station_query.delete(synchronize_session=False)
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+# Update station
+@router.patch('/{id}', response_model=schemas.ChargingStationOut)
+def update_station(id: int, updated_station: schemas.ChargingStationUpdate, db: Session = Depends(get_db)):
+    station_query = db.query(models.ChargingStation).filter(models.ChargingStation.id == id)
+    station = station_query.first()
+
+    if not station:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail=f"Station with id: {id} does not exist")
+
+    station_query.update(updated_station.dict(exclude_unset=True), synchronize_session=False)
+    db.commit()
+
+    return station_query.first()
