@@ -126,6 +126,9 @@ def stop_charging_session_endpoint(
             raise HTTPException(status_code=404, detail="Active session not found")
 
         new_capacity = capacity_update.get('current_battery_capacity_kw')
+        energy_used = capacity_update.get('energy_used_kwh')
+        total_cost = capacity_update.get('total_cost')
+
         if new_capacity is None:
             raise HTTPException(
                 status_code=400,
@@ -137,25 +140,14 @@ def stop_charging_session_endpoint(
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle not found")
 
-        # Calculate charge added based on the difference
-        charge_added = max(0, new_capacity - vehicle.current_battery_capacity_kw)
-
-        logger.info(f"Stopping session {session_id}:")
-        logger.info(f"Current capacity: {vehicle.current_battery_capacity_kw} kWh")
-        logger.info(f"New capacity: {new_capacity} kWh")
-        logger.info(f"Charge added: {charge_added} kWh")
-
         # Update vehicle capacity
         vehicle.current_battery_capacity_kw = new_capacity
 
-        # Calculate cost based on energy used - using same logic as frontend
-        total_cost = calculate_cost(charge_added)
-
-        # Update session
+        # Update session with values from frontend
         session.end_time = datetime.utcnow()
         session.status = "COMPLETED"
-        session.energy_used_kwh = charge_added
-        session.total_cost = total_cost
+        session.energy_used_kwh = energy_used or 0
+        session.total_cost = total_cost or 0
 
         db.commit()
         db.refresh(vehicle)
@@ -252,7 +244,6 @@ def update_session_state(
     current_user: models.User = Depends(get_current_user)
 ):
     try:
-        # Add request logging
         logger.info(f"Received update request for session {session_id}:")
         logger.info(f"Update data: {session_update.dict()}")
 
@@ -266,35 +257,20 @@ def update_session_state(
             logger.error(f"No active session found for ID {session_id}")
             raise HTTPException(status_code=404, detail="Active session not found")
         
-        # Log current session state
-        logger.info(f"Current session state:")
-        logger.info(f"Energy used: {session.energy_used_kwh} kWh")
-        logger.info(f"Total cost: {session.total_cost} PLN")
+        # Use values directly from frontend
+        session.energy_used_kwh = float(session_update.energy_used_kwh)
+        session.total_cost = float(session_update.total_cost)
         
-        # Use the energy_used_kwh directly from the update
-        energy_used = max(0, session_update.energy_used_kwh)
-        total_cost = calculate_cost(energy_used)
-        
-        logger.info(f"Calculated values:")
-        logger.info(f"Energy used: {energy_used} kWh")
-        logger.info(f"Total cost: {total_cost} PLN")
-        
-        # Update session
-        session.energy_used_kwh = energy_used
-        session.total_cost = total_cost
-        
-        # Log after update
-        logger.info(f"Updated session values:")
-        logger.info(f"Energy used: {session.energy_used_kwh} kWh")
-        logger.info(f"Total cost: {session.total_cost} PLN")
+        # If current_battery_level is provided, update vehicle battery level
+        if session_update.current_battery_level is not None:
+            vehicle = db.query(models.Vehicle).filter(
+                models.Vehicle.id == session.vehicle_id
+            ).first()
+            if vehicle:
+                vehicle.current_battery_capacity_kw = float(session_update.current_battery_level)
         
         db.commit()
         db.refresh(session)
-        
-        # Log final state
-        logger.info(f"Final session state after refresh:")
-        logger.info(f"Energy used: {session.energy_used_kwh} kWh")
-        logger.info(f"Total cost: {session.total_cost} PLN")
             
         return session
         

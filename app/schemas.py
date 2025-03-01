@@ -173,7 +173,7 @@ class ChargingSessionOut(ChargingSessionBase):
 class ChargingSessionUpdate(BaseModel):
     energy_used_kwh: float
     total_cost: float
-    current_battery_capacity_kw: float
+    current_battery_level: Optional[float] = None
 
     class Config:
         from_attributes = True
