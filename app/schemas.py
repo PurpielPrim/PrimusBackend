@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from pydantic.types import conint
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from .models import UserRoleEnum
 
@@ -56,10 +56,10 @@ class VehicleCreate(VehicleBase):
     user_id: str
     license_plate: str
     brand: str
-    battery_capacity_kWh: Optional[int] = None
+    battery_capacity_kwh: Optional[int] = None
     battery_condition: Optional[float] = None
-    max_charging_powerkWh: Optional[int] = None
-    current_battery_capacity_kw: int
+    max_charging_powerkwh: Optional[int] = None
+    current_battery_capacity_kw: float
 
 class VehicleUpdate(VehicleBase):
     brand: Optional[str] = None
@@ -70,10 +70,10 @@ class VehicleUpdate(VehicleBase):
 # Do wypisywania pojazdu
 class VehicleOut(VehicleBase):
     pass
-    battery_capacity_kWh: int
+    battery_capacity_kwh: int
     battery_condition: float
-    max_charging_powerkWh: int
-    current_battery_capacity_kw: int
+    max_charging_powerkwh: int
+    current_battery_capacity_kw: float
 
     class Config:
         from_attributes = True
@@ -96,38 +96,67 @@ class ChargingStationOut(ChargingStationBase):
 
     class Config:
         from_attributes = True
+
+class ChargingStationUpdate(BaseModel):
+    name: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    class Config:
+        from_attributes = True
     
 class ChargingPortBase(BaseModel):
     station_id: int
-    power_kW: int
+    power_kw: int  # Changed from power_kW to power_kw
     status: str
 
 class ChargingPortCreate(ChargingPortBase):
     pass
 
 class ChargingPortUpdate(BaseModel):
-    station_id: Optional[int] = None
-    power_kW: Optional[int] = None
-    status: Optional[str] = None
-    last_service_date: Optional[str] = None
-
-class ChargingPortOut(ChargingPortBase):
-    id: int
-    pass
-    created_at: datetime
+    power_kw: float | None = None
+    status: str | None = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
+
+class ChargingPortOut(BaseModel):
+    id: int
+    station_id: int
+    power_kw: int
+    status: str
+    last_service_date: Optional[date] = None  # Make it optional
+
+    class Config:
+        orm_mode = True
 
 # Podstawowa struktura sesji ładowania
 class ChargingSessionBase(BaseModel):
+    id: int
+    user_id: str
     vehicle_id: int
     port_id: int
+    start_time: datetime
+    energy_used_kwh: float
+    total_cost: float
+    status: str
+    payment_status: str = "PENDING"  # Add this line
+
+    class Config:
+        orm_mode = True
 
 # Tworzenie nowej sesji ładowania
-class ChargingSessionCreate(ChargingSessionBase):
-    pass
+class ChargingSessionCreate(BaseModel):
+    vehicle_id: int
+    port_id: int
     duration_minutes: int
+    energy_used_kwh: float = 0.0
+    total_cost: float = 0.0
+    status: str = "IN_PROGRESS"
+    payment_status: str = "PENDING"  # Add this line
+    
+    class Config:
+        from_attributes = True
 
 # Odpowiedź dla użytkownika (np. po rozpoczęciu lub zakończeniu sesji)
 class ChargingSessionOut(ChargingSessionBase):
@@ -135,12 +164,23 @@ class ChargingSessionOut(ChargingSessionBase):
     user_id: str
     start_time: datetime
     end_time: Optional[datetime] = None
-    energy_used_kWh: float
+    energy_used_kwh: float
     total_cost: float
     status: str
+    payment_status: str  # Add this line
 
     class Config:
         from_attributes = True     
+
+# Add this class to your schemas.py file
+class ChargingSessionUpdate(BaseModel):
+    energy_used_kwh: float
+    total_cost: float
+    current_battery_level: Optional[float] = None
+    payment_status: Optional[str] = None  # Add this line
+
+    class Config:
+        from_attributes = True
 
 # Baza płatności
 class PaymentBase(BaseModel):
