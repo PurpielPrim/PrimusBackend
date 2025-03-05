@@ -5,6 +5,7 @@ from .. import models, schemas
 from ..database import get_db
 from ..routers.auth import get_current_user
 
+
 router = APIRouter(
     prefix="/payments",
     tags=["Payments"]
@@ -49,14 +50,20 @@ async def get_payments(
         payments = (
             db.query(models.Payment)
             .filter(models.Payment.user_id == current_user.id)
+            .order_by(models.Payment.created_at.desc())
             .all()
         )
+        
+        if not payments:
+            return []
+            
         return payments
+        
     except Exception as e:
         logger.error(f"Error fetching payments: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch payments"
+            detail=f"Failed to fetch payments: {str(e)}"
         )
 
 # Zaktualizuj płatność

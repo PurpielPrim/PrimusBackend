@@ -101,11 +101,12 @@ class Payment(Base):
     id = Column(BigInteger, primary_key=True, nullable=False)
     user_id = Column(Text, ForeignKey("User.id"), nullable=False)
     session_id = Column(BigInteger, ForeignKey("charging_sessions.id"), nullable=False)
-    amount = Column(Float, nullable=False)
     status = Column(String(255), nullable=False)
     transaction_id = Column(BigInteger, nullable=False)
     payment_method = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    
+    charging_session = relationship("ChargingSession", backref="payment", lazy="joined")
 
 # tabela z kuponami
 class Discount(Base):

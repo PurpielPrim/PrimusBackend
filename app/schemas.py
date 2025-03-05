@@ -133,17 +133,13 @@ class ChargingPortOut(BaseModel):
 # Podstawowa struktura sesji ładowania
 class ChargingSessionBase(BaseModel):
     id: int
-    user_id: str
-    vehicle_id: int
-    port_id: int
-    start_time: datetime
-    energy_used_kwh: float
     total_cost: float
-    status: str
-    payment_status: str = "PENDING"  # Add this line
+    energy_used_kwh: float
+    start_time: datetime
+    end_time: Optional[datetime]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Tworzenie nowej sesji ładowania
 class ChargingSessionCreate(BaseModel):
@@ -186,7 +182,6 @@ class ChargingSessionUpdate(BaseModel):
 class PaymentBase(BaseModel):
     user_id: str
     session_id: int
-    amount: float
     status: str
     transaction_id: int
     payment_method: str
@@ -196,9 +191,15 @@ class PaymentCreate(PaymentBase):
     pass
 
 # Do wypisywania płatności
-class PaymentOut(PaymentBase):
+class PaymentOut(BaseModel):
     id: int
+    user_id: str
+    session_id: int
+    status: str
+    transaction_id: int
+    payment_method: str
     created_at: datetime
+    charging_session: ChargingSessionBase
 
     class Config:
         from_attributes = True

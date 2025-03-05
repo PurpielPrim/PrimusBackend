@@ -19,7 +19,11 @@ class PortStatus(str, Enum):
 
 # Stwórz port
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.ChargingPortOut)
-def create_port(charging_port: schemas.ChargingPortCreate, db: Session = Depends(get_db)):
+def create_port(
+    charging_port: schemas.ChargingPortCreate, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)  # Add this line
+):
     new_port = models.ChargingPort(**charging_port.dict())
     db.add(new_port)
     db.commit()
