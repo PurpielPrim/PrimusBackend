@@ -2,8 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from .config import settings
 
-DATABASE_URL = "postgresql+psycopg2://neondb_owner:npg_MJ3KxrU5QSGC@ep-fragrant-sky-a9rehxx8-pooler.gwc.azure.neon.tech:5432/neondb?sslmode=require"
+DATABASE_URL = settings.database_url
 
 # Testowanie połączenia
 try:
