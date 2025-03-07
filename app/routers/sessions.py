@@ -6,9 +6,9 @@ import logging
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
-from sqlalchemy import text  # Add this import at the top
+from sqlalchemy import text
 
-COST_PER_KWH = 1.0  # 1 PLN per kWh
+COST_PER_KWH = 1.0
 
 logger = logging.getLogger(__name__)
 
@@ -18,68 +18,77 @@ router = APIRouter(
 )
 
 def end_charging_session(session_id: int, db: Session, end_time: datetime):
+    """
+    Ends a charging session and updates vehicle battery state
+    Args:
+        session_id: ID of the session to end
+        db: Database session
+        end_time: Time when charging ended
+    Returns:
+        models.ChargingSession: Updated session
+    Raises:
+        HTTPException: When vehicle is not found or update fails
+    """
     session = db.query(models.ChargingSession).filter(models.ChargingSession.id == session_id).first()
     if session and session.status == "IN_PROGRESS":
         try:
-            # Calculate charging duration
             start_time = session.start_time.replace(tzinfo=timezone.utc) if session.start_time.tzinfo is None else session.start_time
             end_time = end_time.replace(tzinfo=timezone.utc) if end_time.tzinfo is None else end_time
             charging_time_hours = (end_time - start_time).total_seconds() / 3600
             
-            # Get vehicle and update its battery capacity
             vehicle = db.query(models.Vehicle).filter(models.Vehicle.id == session.vehicle_id).first()
             if vehicle:
-                # Log initial battery condition
-                initial_condition = vehicle.battery_condition
-                
                 max_charge = vehicle.battery_capacity_kwh
                 current_charge = vehicle.current_battery_capacity_kw
                 charge_rate = min(22, vehicle.max_charging_powerkwh)
                 
-                # Calculate new charge level
                 charge_added = charging_time_hours * charge_rate
                 new_charge = min(max_charge, current_charge + charge_added)
                 
-                logger.info(f"Final battery update for vehicle {vehicle.id}:")
-                logger.info(f"Current charge: {current_charge} kWh")
-                logger.info(f"Charge added: {charge_added} kWh")
-                logger.info(f"New charge: {new_charge} kWh")
-                logger.info(f"Cost per kWh: {COST_PER_KWH}")
-                
-                # Only update current battery capacity, not battery condition
                 vehicle.current_battery_capacity_kw = new_charge
                 
-                # Log if battery condition changed
-                if vehicle.battery_condition != initial_condition:
-                    logger.warning(f"Battery condition changed from {initial_condition} to {vehicle.battery_condition}")
-                
-                # Update session with correct cost calculation
                 session.end_time = end_time
                 session.status = "COMPLETED"
                 session.energy_used_kwh = charge_added
-                session.total_cost = calculate_cost(charge_added)  # Use calculate_cost instead of direct multiplication
+                session.total_cost = calculate_cost(charge_added)
                 
                 db.commit()
                 db.refresh(vehicle)
                 db.refresh(session)
                 
-                logger.info(f"Successfully completed charging session {session_id}")
                 return session
             else:
                 raise HTTPException(status_code=404, detail="Vehicle not found")
                 
         except Exception as e:
-            logger.error(f"Error in end_charging_session: {str(e)}")
             db.rollback()
             raise
 
-# Update the start session endpoint to include payment_status
+def calculate_cost(energy_used: float) -> float:
+    """
+    Calculates charging cost
+    Args:
+        energy_used: Amount of energy used in kWh
+    Returns:
+        float: Cost in currency units
+    """
+    return max(0, energy_used * COST_PER_KWH)
+
 @router.post("/start", response_model=schemas.ChargingSessionBase)
 def add_log(
     session_data: schemas.ChargingSessionCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    """
+    Creates a new charging session
+    Args:
+        session_data: Session details
+        db: Database session
+        current_user: Currently authenticated user
+    Returns:
+        schemas.ChargingSessionBase: Created session
+    """
     try:
         new_session = models.ChargingSession(
             user_id=str(current_user.id),
@@ -89,7 +98,7 @@ def add_log(
             energy_used_kwh=float(session_data.energy_used_kwh),
             total_cost=float(session_data.total_cost),
             status=session_data.status,
-            payment_status="PENDING"  # Add this line
+            payment_status="PENDING"
         )
         
         db.add(new_session)
@@ -98,16 +107,11 @@ def add_log(
         
         return new_session
     except Exception as e:
-        logger.error(f"Error creating charging session: {str(e)}")
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create charging session: {str(e)}"
         )
-
-def calculate_cost(energy_used: float) -> float:
-    """Calculate cost using the same logic as frontend"""
-    return max(0, energy_used * COST_PER_KWH)
 
 @router.post("/{session_id}/stop", response_model=schemas.ChargingSessionBase)
 def stop_charging_session_endpoint(
@@ -234,7 +238,8 @@ def get_session(session_id: int, db: Session = Depends(get_db)):
         
     return {
         **session.__dict__,
-        "duration_minutes": session.duration_minutes  # Use the calculated property
+        "duration_minutes": session.duration_minutes,
+        "vehicle_id": session.vehicle_id  # Explicitly include vehicle_id
     }
 
 @router.patch("/{session_id}/update", response_model=schemas.ChargingSessionOut)
